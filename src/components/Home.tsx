@@ -1,16 +1,27 @@
 import React, { useState, useEffect, useRef } from "react";
 
 const Home: React.FC = () => {
-    const [timeLeft, setTimeLeft] = useState(25 * 60);
+    const [timeLeft, setTimeLeft] = useState(2 * 60);
     const [isRunning, setIsRunning] = useState(false);
     const [mode, setMode] = useState<"focus" | "break">("focus");
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const playSound = () => {
+        const audio = new Audio("/notif.mp3");
+        audio.play();
+    };
 
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
     };
+
+    useEffect(() => {
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
+    }, []);
 
     useEffect(() => {
         if (isRunning) {
@@ -20,16 +31,23 @@ const Home: React.FC = () => {
                         if (timerRef.current) clearInterval(timerRef.current);
                         setIsRunning(false);
 
+                        playSound();
+
+                        if (Notification.permission === "granted") {
+                            new Notification(mode === "focus" ? "Focus session completed! Take a short break." : "Break's over! Back to focus.");
+                        }
+
                         if (mode === "focus") {
                             setMode("break");
-                            setTimeLeft(5 * 60); // 5 menit break
+                            setTimeLeft(5 * 60); // waktu istirahat
                         } else {
                             setMode("focus");
-                            setTimeLeft(25 * 60); // 25 menit fokus
+                            setTimeLeft(2 * 60); // waktu fokus
                         }
 
                         return 0;
                     }
+
                     return prev - 1;
                 });
             }, 1000);
@@ -47,7 +65,7 @@ const Home: React.FC = () => {
     const handleReset = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsRunning(false);
-        setTimeLeft(mode === "focus" ? 25 * 60 : 5 * 60);
+        setTimeLeft(mode === "focus" ? 2 * 60 : 5 * 60);
     };
 
     return (
