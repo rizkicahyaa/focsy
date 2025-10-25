@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
 const Home: React.FC = () => {
-    const [timeLeft, setTimeLeft] = useState(2 * 60);
+    const [timeLeft, setTimeLeft] = useState(25 * 60);
     const [isRunning, setIsRunning] = useState(false);
     const [mode, setMode] = useState<"focus" | "break">("focus");
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -42,7 +42,7 @@ const Home: React.FC = () => {
                             setTimeLeft(5 * 60); // waktu istirahat
                         } else {
                             setMode("focus");
-                            setTimeLeft(2 * 60); // waktu fokus
+                            setTimeLeft(25 * 60); // waktu fokus
                         }
 
                         return 0;
@@ -65,7 +65,7 @@ const Home: React.FC = () => {
     const handleReset = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsRunning(false);
-        setTimeLeft(mode === "focus" ? 2 * 60 : 5 * 60);
+        setTimeLeft(mode === "focus" ? 25 * 60 : 5 * 60);
     };
 
     return (
