@@ -4,6 +4,7 @@ const Home: React.FC = () => {
     const [timeLeft, setTimeLeft] = useState(25 * 60);
     const [isRunning, setIsRunning] = useState(false);
     const [mode, setMode] = useState<"focus" | "break">("focus");
+    const [hasLoaded, setHasLoaded] = useState(false);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const playSound = () => {
@@ -17,13 +18,51 @@ const Home: React.FC = () => {
         return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
     };
 
+    // 🔔 Minta izin notifikasi
     useEffect(() => {
-        if ("Notification" in window) {
-            Notification.requestPermission();
-        }
+        if ("Notification" in window) Notification.requestPermission();
     }, []);
 
+    // 🧠 Load dari localStorage saat pertama kali halaman dibuka
     useEffect(() => {
+        const savedTime = localStorage.getItem("timeLeft");
+        const savedMode = localStorage.getItem("mode");
+        const savedRunning = localStorage.getItem("isRunning");
+        const lastUpdate = localStorage.getItem("lastUpdate");
+
+        let isRunningFromStorage = savedRunning === "true";
+
+        if (savedTime) {
+            let updatedTime = parseInt(savedTime);
+
+            // ✅ Hanya kurangi waktu jika timer sedang berjalan
+            if (isRunningFromStorage && lastUpdate) {
+                const elapsed = Math.floor((Date.now() - parseInt(lastUpdate)) / 1000);
+                updatedTime -= elapsed;
+                if (updatedTime < 0) updatedTime = 0;
+            }
+
+            setTimeLeft(updatedTime);
+        }
+
+        if (savedMode === "focus" || savedMode === "break") setMode(savedMode);
+        setIsRunning(isRunningFromStorage);
+        setHasLoaded(true);
+    }, []);
+
+    // 💾 Simpan semua perubahan ke localStorage
+    useEffect(() => {
+        if (!hasLoaded) return;
+        localStorage.setItem("timeLeft", String(timeLeft));
+        localStorage.setItem("mode", mode);
+        localStorage.setItem("isRunning", String(isRunning));
+        localStorage.setItem("lastUpdate", String(Date.now()));
+    }, [timeLeft, mode, isRunning, hasLoaded]);
+
+    // ⏳ Timer utama
+    useEffect(() => {
+        if (!hasLoaded) return;
+
         if (isRunning) {
             timerRef.current = setInterval(() => {
                 setTimeLeft((prev) => {
@@ -39,15 +78,14 @@ const Home: React.FC = () => {
 
                         if (mode === "focus") {
                             setMode("break");
-                            setTimeLeft(5 * 60); // waktu istirahat
+                            setTimeLeft(5 * 60);
                         } else {
                             setMode("focus");
-                            setTimeLeft(25 * 60); // waktu fokus
+                            setTimeLeft(25 * 60);
                         }
 
                         return 0;
                     }
-
                     return prev - 1;
                 });
             }, 1000);
@@ -58,14 +96,17 @@ const Home: React.FC = () => {
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [isRunning, mode]);
+    }, [isRunning, mode, hasLoaded]);
 
+    // ▶️ Start / Pause
     const handleStartPause = () => setIsRunning((prev) => !prev);
 
+    // 🔁 Reset
     const handleReset = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsRunning(false);
         setTimeLeft(mode === "focus" ? 25 * 60 : 5 * 60);
+        localStorage.removeItem("lastUpdate");
     };
 
     return (
