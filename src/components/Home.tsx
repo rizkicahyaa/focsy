@@ -18,12 +18,10 @@ const Home: React.FC = () => {
         return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
     };
 
-    // 🔔 Minta izin notifikasi
     useEffect(() => {
         if ("Notification" in window) Notification.requestPermission();
     }, []);
 
-    // 🧠 Load dari localStorage saat pertama kali halaman dibuka
     useEffect(() => {
         const savedTime = localStorage.getItem("timeLeft");
         const savedMode = localStorage.getItem("mode");
@@ -35,7 +33,6 @@ const Home: React.FC = () => {
         if (savedTime) {
             let updatedTime = parseInt(savedTime);
 
-            // ✅ Hanya kurangi waktu jika timer sedang berjalan
             if (isRunningFromStorage && lastUpdate) {
                 const elapsed = Math.floor((Date.now() - parseInt(lastUpdate)) / 1000);
                 updatedTime -= elapsed;
@@ -50,7 +47,6 @@ const Home: React.FC = () => {
         setHasLoaded(true);
     }, []);
 
-    // 💾 Simpan semua perubahan ke localStorage
     useEffect(() => {
         if (!hasLoaded) return;
         localStorage.setItem("timeLeft", String(timeLeft));
@@ -59,7 +55,6 @@ const Home: React.FC = () => {
         localStorage.setItem("lastUpdate", String(Date.now()));
     }, [timeLeft, mode, isRunning, hasLoaded]);
 
-    // ⏳ Timer utama
     useEffect(() => {
         if (!hasLoaded) return;
 
@@ -98,10 +93,8 @@ const Home: React.FC = () => {
         };
     }, [isRunning, mode, hasLoaded]);
 
-    // ▶️ Start / Pause
     const handleStartPause = () => setIsRunning((prev) => !prev);
 
-    // 🔁 Reset
     const handleReset = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         setIsRunning(false);
@@ -111,37 +104,34 @@ const Home: React.FC = () => {
 
     return (
         <div
-            className="min-h-screen flex flex-col items-center justify-center relative bg-cover bg-center bg-no-repeat"
+            className="min-h-screen flex flex-col items-center justify-center relative bg-cover bg-center bg-no-repeat text-white"
             style={{
-                backgroundImage: "url('https://images.unsplash.com/photo-1593062096033-9a26b09da705?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=1170')",
+                backgroundImage: "url('https://images.unsplash.com/photo-1593062096033-9a26b09da705?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=1200')",
             }}
         >
-            <div className="absolute inset-0 bg-white/30 backdrop-blur-md"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60"></div>
+            <div className="absolute inset-0 bg-white/20 backdrop-blur-md"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70"></div>
 
-            <div className="relative z-10 flex flex-col items-center text-white px-6">
-                <header className="mb-16 text-center">
-                    <h1 className="text-6xl font-extrabold text-orange-400 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] tracking-wide">Focsy</h1>
-                    <p className="text-xl text-gray-200 mt-3 font-medium max-w-xl">Fokus. Istirahat. Ulangi. Bangun ritme kerja yang produktif dan seimbang.</p>
+            <div className="relative z-10 flex flex-col items-center px-4 sm:px-6 text-center">
+                <header className="mb-10 sm:mb-16">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-orange-400 drop-shadow-lg tracking-wide">Focsy</h1>
+                    <p className="text-base sm:text-lg lg:text-xl text-gray-200 mt-3 font-medium max-w-xl">Fokus. Istirahat. Ulangi. Bangun ritme kerja yang produktif dan seimbang.</p>
                 </header>
 
-                <div className={`bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-white/20 rounded-3xl p-16 w-[460px] text-center transition-all duration-500 ${mode === "focus" ? "ring-4 ring-orange-400" : "ring-4 ring-green-400"}`}>
-                    <h3 className={`text-2xl font-semibold mb-4 ${mode === "focus" ? "text-white" : "text-green-300"}`}>{mode === "focus" ? "Focus Time" : "Break Time"}</h3>
+                <div className="bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-white/20 rounded-3xl p-8 sm:p-12 lg:p-16 w-full max-w-xs sm:max-w-md lg:max-w-lg">
+                    <h2 className="text-6xl sm:text-8xl lg:text-[100px] font-bold text-white leading-none mb-8 drop-shadow-lg">{formatTime(timeLeft)}</h2>
 
-                    <h2 className="text-[120px] font-bold text-white leading-none mb-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">{formatTime(timeLeft)}</h2>
-
-                    <div className="flex justify-center gap-6">
-                        <button onClick={handleStartPause} className={`${isRunning ? "bg-red-500 hover:bg-red-600" : mode === "focus" ? "bg-orange-500 hover:bg-orange-600" : "bg-green-500 hover:bg-green-600"} text-white text-xl font-semibold px-8 py-4 rounded-2xl shadow-md active:scale-95 transition-all`}>
+                    <div className="flex justify-center gap-4 sm:gap-6">
+                        <button onClick={handleStartPause} className="bg-orange-500 text-white text-base sm:text-lg lg:text-xl font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl shadow-md hover:bg-orange-600 active:scale-95 transition-all">
                             {isRunning ? "Pause" : "Start"}
                         </button>
-
-                        <button onClick={handleReset} className="bg-gray-200/80 text-gray-800 text-xl font-semibold px-8 py-4 rounded-2xl shadow-md hover:bg-gray-300 active:scale-95 transition-all">
+                        <button onClick={handleReset} className="bg-gray-200/80 text-gray-800 text-base sm:text-lg lg:text-xl font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl shadow-md hover:bg-gray-300 active:scale-95 transition-all">
                             Reset
                         </button>
                     </div>
                 </div>
 
-                <footer className="mt-16 text-gray-300 text-sm">
+                <footer className="mt-10 sm:mt-16 text-gray-300 text-xs sm:text-sm">
                     Made with ❤️ by <span className="text-orange-400 font-medium">Focsy</span>
                 </footer>
             </div>
