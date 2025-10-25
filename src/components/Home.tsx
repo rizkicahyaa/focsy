@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 const Home: React.FC = () => {
     const [timeLeft, setTimeLeft] = useState(25 * 60);
     const [isRunning, setIsRunning] = useState(false);
+    const [mode, setMode] = useState<"focus" | "break">("focus");
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const formatTime = (seconds: number) => {
@@ -16,25 +17,37 @@ const Home: React.FC = () => {
             timerRef.current = setInterval(() => {
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
-                        clearInterval(timerRef.current!);
+                        if (timerRef.current) clearInterval(timerRef.current);
                         setIsRunning(false);
+
+                        if (mode === "focus") {
+                            setMode("break");
+                            setTimeLeft(5 * 60); // 5 menit break
+                        } else {
+                            setMode("focus");
+                            setTimeLeft(25 * 60); // 25 menit fokus
+                        }
+
                         return 0;
                     }
                     return prev - 1;
                 });
             }, 1000);
         } else {
-            clearInterval(timerRef.current!);
+            if (timerRef.current) clearInterval(timerRef.current);
         }
 
-        return () => clearInterval(timerRef.current!);
-    }, [isRunning]);
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [isRunning, mode]);
 
     const handleStartPause = () => setIsRunning((prev) => !prev);
+
     const handleReset = () => {
-        clearInterval(timerRef.current!);
-        setTimeLeft(25 * 60);
+        if (timerRef.current) clearInterval(timerRef.current);
         setIsRunning(false);
+        setTimeLeft(mode === "focus" ? 25 * 60 : 5 * 60);
     };
 
     return (
@@ -45,7 +58,6 @@ const Home: React.FC = () => {
             }}
         >
             <div className="absolute inset-0 bg-white/30 backdrop-blur-md"></div>
-
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60"></div>
 
             <div className="relative z-10 flex flex-col items-center text-white px-6">
@@ -54,13 +66,16 @@ const Home: React.FC = () => {
                     <p className="text-xl text-gray-200 mt-3 font-medium max-w-xl">Fokus. Istirahat. Ulangi. Bangun ritme kerja yang produktif dan seimbang.</p>
                 </header>
 
-                <div className="bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-white/20 rounded-3xl p-16 w-[460px] text-center">
+                <div className={`bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-white/20 rounded-3xl p-16 w-[460px] text-center transition-all duration-500 ${mode === "focus" ? "ring-4 ring-orange-400" : "ring-4 ring-green-400"}`}>
+                    <h3 className={`text-2xl font-semibold mb-4 ${mode === "focus" ? "text-white" : "text-green-300"}`}>{mode === "focus" ? "Focus Time" : "Break Time"}</h3>
+
                     <h2 className="text-[120px] font-bold text-white leading-none mb-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">{formatTime(timeLeft)}</h2>
 
                     <div className="flex justify-center gap-6">
-                        <button onClick={handleStartPause} className={`${isRunning ? "bg-red-500 hover:bg-red-600" : "bg-orange-500 hover:bg-orange-600"} text-white text-xl font-semibold px-8 py-4 rounded-2xl shadow-md active:scale-95 transition-all`}>
+                        <button onClick={handleStartPause} className={`${isRunning ? "bg-red-500 hover:bg-red-600" : mode === "focus" ? "bg-orange-500 hover:bg-orange-600" : "bg-green-500 hover:bg-green-600"} text-white text-xl font-semibold px-8 py-4 rounded-2xl shadow-md active:scale-95 transition-all`}>
                             {isRunning ? "Pause" : "Start"}
                         </button>
+
                         <button onClick={handleReset} className="bg-gray-200/80 text-gray-800 text-xl font-semibold px-8 py-4 rounded-2xl shadow-md hover:bg-gray-300 active:scale-95 transition-all">
                             Reset
                         </button>
