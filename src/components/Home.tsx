@@ -5,6 +5,7 @@ const Home: React.FC = () => {
     const [isRunning, setIsRunning] = useState(false);
     const [mode, setMode] = useState<"focus" | "break">("focus");
     const [hasLoaded, setHasLoaded] = useState(false);
+    const [note, setNote] = useState("");
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const playSound = () => {
@@ -27,6 +28,7 @@ const Home: React.FC = () => {
         const savedMode = localStorage.getItem("mode");
         const savedRunning = localStorage.getItem("isRunning");
         const lastUpdate = localStorage.getItem("lastUpdate");
+        const savedNote = localStorage.getItem("note");
 
         let isRunningFromStorage = savedRunning === "true";
 
@@ -44,6 +46,7 @@ const Home: React.FC = () => {
 
         if (savedMode === "focus" || savedMode === "break") setMode(savedMode);
         setIsRunning(isRunningFromStorage);
+        if (savedNote) setNote(savedNote);
         setHasLoaded(true);
     }, []);
 
@@ -53,7 +56,8 @@ const Home: React.FC = () => {
         localStorage.setItem("mode", mode);
         localStorage.setItem("isRunning", String(isRunning));
         localStorage.setItem("lastUpdate", String(Date.now()));
-    }, [timeLeft, mode, isRunning, hasLoaded]);
+        localStorage.setItem("note", note);
+    }, [timeLeft, mode, isRunning, note, hasLoaded]);
 
     useEffect(() => {
         if (!hasLoaded) return;
@@ -125,9 +129,15 @@ const Home: React.FC = () => {
                         <button onClick={handleStartPause} className="bg-orange-500 text-white text-base sm:text-lg lg:text-xl font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl shadow-md hover:bg-orange-600 active:scale-95 transition-all">
                             {isRunning ? "Pause" : "Start"}
                         </button>
+
                         <button onClick={handleReset} className="bg-gray-200/80 text-gray-800 text-base sm:text-lg lg:text-xl font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl shadow-md hover:bg-gray-300 active:scale-95 transition-all">
                             Reset
                         </button>
+                    </div>
+
+                    <div className="text-left">
+                        <label className="block text-sm text-gray-300 mb-2 font-semibold">Catatan:</label>
+                        <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Tulis catatan singkatmu di sini..." className="w-full h-28 sm:h-32 text-gray-800 p-3 rounded-xl bg-white/80 backdrop-blur-md focus:ring-2 focus:ring-orange-400 outline-none resize-none text-sm sm:text-base" />
                     </div>
                 </div>
 
