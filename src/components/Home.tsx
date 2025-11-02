@@ -126,7 +126,7 @@ const Home: React.FC = () => {
                     <h2 className="text-6xl sm:text-8xl lg:text-[100px] font-bold text-white leading-none mb-8 drop-shadow-lg">{formatTime(timeLeft)}</h2>
 
                     <div className="flex justify-center gap-4 sm:gap-6">
-                        <button onClick={handleStartPause} className="bg-orange-500 text-white text-base sm:text-lg lg:text-xl font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl shadow-md hover:bg-orange-600 active:scale-95 transition-all">
+                        <button onClick={handleStartPause} className={`${isRunning ? "bg-red-500 hover:bg-red-600" : "bg-orange-500 hover:bg-orange-600"} text-white text-base sm:text-lg lg:text-xl font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl shadow-md active:scale-95 transition-all`}>
                             {isRunning ? "Pause" : "Start"}
                         </button>
 
